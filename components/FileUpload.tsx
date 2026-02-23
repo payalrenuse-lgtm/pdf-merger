@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection, DropEvent } from "react-dropzone";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
@@ -34,7 +34,7 @@ export default function FileUpload({
   const config = ACCEPT_CONFIG[accept];
 
   const onDrop = useCallback(
-    (acceptedFiles: File[], rejected: { file: File; errors: { code: string; message: string }[] }[]) => {
+    (acceptedFiles: File[], fileRejections: FileRejection[], event: DropEvent) => {
       const validTypes = accept === "pdf"
         ? (f: File) => f.type === "application/pdf"
         : (f: File) => f.type === "image/jpeg" || f.type === "image/png";
@@ -55,8 +55,8 @@ export default function FileUpload({
         }
       }
 
-      // Collect errors from react-dropzone rejects
-      const rejectErrors: FileValidationError[] = rejected.map(({ file, errors }) => {
+      // Collect errors from react-dropzone fileRejections
+      const rejectErrors: FileValidationError[] = fileRejections.map(({ file, errors }) => {
         const e = errors[0];
         let reason = "File was rejected";
         if (e?.code === "file-invalid-type") reason = `Invalid file type. Only ${config.label} files are allowed.`;
